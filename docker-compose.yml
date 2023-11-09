@@ -1,0 +1,40 @@
+version: '3'
+services:
+  mongo:
+    image: mongo
+    restart: always
+    volumes:
+      - ./mongo:/data/db
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=chatzip
+      - MONGO_INITDB_ROOT_PASSWORD=mongo^^chatzip
+      - MONGO_INITDB_DATABASE=location_db
+  fastapi:
+    build: ./SW_innovation_Backend
+    ports:
+      - "1101:1101"
+    volumes:
+      - ./SW_innovation_Backend:/app
+    depends_on:
+      - mongo
+
+  streamlit_app:
+    build: ./SW_innovation_Streamlit
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./SW_innovation_Streamlit:/app
+    depends_on:
+      - fastapi
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx_cache:/var/cache/nginx
+    depends_on:
+      - fastapi
+      - streamlit_app
